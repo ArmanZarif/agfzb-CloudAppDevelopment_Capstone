@@ -6,6 +6,53 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
     <body>
-    <!--Add a registration form here -->
+        <section class="container">
+            <h1>Sign up</h1>
+            <form  id="sign-up-form" method="post" action="{% url 'djangoapp:sign-up' %}">
+                {% csrf_token %}
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input value="{{ inputs.username|default:'' }}" name="username" id="username" type="text" class="form-control" id="username">              
+              {% if formError.username %}
+              <div class="text-danger">{{ formError.username }}</div>
+                {% endif %}
+            </div>  
+            
+            <div class="form-group">
+                <label for="first_name">First Name</label>
+                <input value="{{ inputs.first_name|default:'' }}" name="first_name" id="first_name" type="text" class="form-control" id="first_name">
+                {% if formError.first_name %}
+                <div class="text-danger">{{ formError.first_name }}</div>
+                  {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="last_name">Last Name</label>
+                <input value="{{ inputs.last_name|default:'' }}" name="last_name" id="last_name" type="text" class="form-control" id="last_name">
+                {% if formError.last_name %}
+                <div class="text-danger">{{ formError.last_name }}</div>
+                  {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input value="{{ inputs.password1|default:'' }}" name="password1" id="password1" type="password" class="form-control">
+                <input  name="password2" id="password2" type="hidden" class="form-control">
+                {% if formError.password2 %}
+                <div class="text-danger">{{ formError.password2 }}</div>
+                {% endif %}
+            </div>
+            
+           
+            <button id="suignup-submit" type="button" onclick="submitForm()" class="btn btn-primary">Sign up</button>
+        </form>        
+        </section>
+        <script>
+            function submitForm(){                               
+                password2.value=password1.value                        
+                document.getElementById("sign-up-form").submit();
+            }
+        </script>
     </body>
+
 </html>

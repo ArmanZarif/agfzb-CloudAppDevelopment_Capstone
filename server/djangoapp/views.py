@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse , Http404
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
 # from .models import related models
@@ -10,6 +10,8 @@ from datetime import datetime
 import logging
 import json
 from django.conf import settings
+from django.contrib.auth.forms import AuthenticationForm
+from .forms import CustomUserCreationForm
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -30,20 +32,52 @@ def contact(request):
     return render(request,'djangoapp/contact_us.html',{'company_info': company_info})
 
 # Create a `login_request` view to handle sign in request
-# def login_request(request):
+def login_request(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            request.session.pop('login_error', None)
+            user = form.get_user()
+            login(request, user)
+            # Redirect to the home page or any other desired page upon successful login
+            return redirect('djangoapp:index')
+        else:
+            # todo put the wrong data to index.html 
+            print('wrong pass or username')
+            request.session['login_data'] = request.POST
+            request.session['login_error'] = '<strong>Not authorized!</strong> Your pass or username is wrong !'
+            return redirect('djangoapp:index')
+    else:
+        print('there is no separate page for login! you can have it in index.html')
+        raise Http404("Page not found")
 # ...
 
 # Create a `logout_request` view to handle sign out request
-# def logout_request(request):
+def logout_request(request):
+    logout(request)    
+    return redirect('djangoapp:index')
 # ...
 
 # Create a `registration_request` view to handle sign up request
-# def registration_request(request):
+def registration_request(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('djangoapp:index')
+        else:                     
+            context = {'inputs': request.POST , 'formError':form.errors}
+            return render(request,'djangoapp/registration.html',context)
+        
+    if request.method == 'GET':
+        return render(request,'djangoapp/registration.html')
 # ...
 
 # Update the `get_dealerships` view to render the index page with a list of dealerships
 def get_dealerships(request):
-    context = {}
+    user = request.user
+    context = {user:user}
     if request.method == "GET":
         return render(request, 'djangoapp/index.html', context)
 
