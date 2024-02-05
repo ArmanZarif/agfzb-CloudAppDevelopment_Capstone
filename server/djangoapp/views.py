@@ -9,6 +9,7 @@ from django.contrib import messages
 from datetime import datetime
 import logging
 import json
+from django.conf import settings
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -18,12 +19,15 @@ logger = logging.getLogger(__name__)
 
 
 # Create an `about` view to render a static about page
-# def about(request):
+def about(request):
+    return render(request,'djangoapp/about.html')
 # ...
 
 
 # Create a `contact` view to return a static contact page
-#def contact(request):
+def contact(request):
+    company_info = settings.COMPANY_INFO   
+    return render(request,'djangoapp/contact_us.html',{'company_info': company_info})
 
 # Create a `login_request` view to handle sign in request
 # def login_request(request):
