@@ -51,12 +51,32 @@ class CarModel(models.Model):
         return self.name
 
 class CarDealer:
-    def __init__(self, dealer_id, name, address):
-        self.dealer_id = dealer_id
-        self.name = name
+    def __init__(self, address, city, full_name, id, lat, long, short_name, st, zip):
         self.address = address
+        self.city = city
+        self.full_name = full_name
+        self.id = id
+        self.lat = lat
+        self.long = long
+        self.short_name = short_name
+        self.st = st
+        self.zip = zip
+
+    def __str__(self):
+        return f"{self.full_name} - {self.address}, {self.city}, {self.st} {self.zip}"
 
 class DealerReview:
-    def __init__(self, dealer_id, review):
-        self.dealer_id = dealer_id
+    def __init__(self, id, name, dealership, review, purchase, purchase_date, car_make, car_model, car_year):
+        self.id = id
+        self.name = name
+        self.dealership = dealership
         self.review = review
+        self.purchase = purchase
+        self.purchase_date = purchase_date
+        self.car_make = car_make
+        self.car_model = car_model
+        self.car_year = car_year
+
+    def __str__(self):
+        return f"Review by {self.name} for {self.car_make} {self.car_model} ({self.car_year}) :  { self.review} \n <br>"
+   
