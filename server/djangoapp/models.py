@@ -76,7 +76,8 @@ class DealerReview:
         self.car_make = car_make
         self.car_model = car_model
         self.car_year = car_year
+        self.sentiment = 'null'
 
     def __str__(self):
-        return f"Review by {self.name} for {self.car_make} {self.car_model} ({self.car_year}) :  { self.review} \n <br>"
+        return f"Review by {self.name} for {self.car_make} {self.car_model} ({self.car_year}) :  { self.review} => sentiment : {self.sentiment} \n <br>"
    

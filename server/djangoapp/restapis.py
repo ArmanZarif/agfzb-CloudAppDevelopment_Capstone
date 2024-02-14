@@ -2,6 +2,7 @@ import requests
 import json
 # import related models here
 from requests.auth import HTTPBasicAuth
+from django.http import HttpResponse
 
 
 # Create a `get_request` to make HTTP GET requests
@@ -10,12 +11,16 @@ from requests.auth import HTTPBasicAuth
 from .models import CarDealer , DealerReview
 
 
-def get_request(url, **kwargs):
+def get_request(url,api_key=None, **kwargs):
     print(kwargs)
-    print("GET from {} ".format(url))
+    print("GET from {} ".format(url))    
     try:
+        if api_key:
+            response = requests.get(url, headers={'Content-Type': 'application/json'},
+                                    params=kwargs,auth=HTTPBasicAuth('apikey', api_key)) 
+        else:            
         # Call get method of requests library with URL and parameters
-        response = requests.get(url, headers={'Content-Type': 'application/json'},
+            response = requests.get(url, headers={'Content-Type': 'application/json'},
                                     params=kwargs)
     except:
         # If any error occurs
@@ -28,6 +33,17 @@ def get_request(url, **kwargs):
 
 # Create a `post_request` to make HTTP POST requests
 # e.g., response = requests.post(url, params=kwargs, json=payload)
+def post_request(url, json_payload, **kwargs):
+    try:
+        # response = 'hi'
+        response = requests.post(url, params=kwargs, json=json_payload)        
+        # return HttpResponse('hi there!')
+    except:
+        print('network error')
+    status_code = response.status_code
+    print(f"status code is = {status_code}")
+    response_to_return = response.json()   
+    return response_to_return
 
 
 # Create a get_dealers_from_cf method to get dealers from a cloud function
@@ -62,12 +78,19 @@ def get_dealer_reviews_from_cf(url, dealer_id):
         reviews = json_result
         for review in reviews:
             review_obj = DealerReview(
-                id=review['id'],name=review['name'],dealership=review['dealership'],
-                review=review['review'],purchase=review['purchase'],purchase_date=review['purchase_date'],
-                car_make=review['car_make'],car_model=review['car_model'],car_year=review['car_year']
+                id=review.get('id'),
+                name=review.get('name'),
+                dealership=review.get('dealership'),
+                review=review.get('review'),
+                purchase=review.get('purchase'),
+                purchase_date=review.get('purchase_date'),
+                car_make=review.get('car_make'),
+                car_model=review.get('car_model'),
+                car_year=review.get('car_year')
             )
             results.append(review_obj)
     return results
+
 
 
 # - Parse JSON results into a DealerView object list
@@ -75,8 +98,39 @@ def get_dealer_reviews_from_cf(url, dealer_id):
 
 # Create an `analyze_review_sentiments` method to call Watson NLU and analyze text
 # def analyze_review_sentiments(text):
+
+def analyze_review_sentiments(dealerreview):
+    url = "https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/077adcb3-6e83-4ca3-998d-993821be0ae7" 
+    api_key = "BBW0NdFyhn6TRLQtDg8h-ZDmyX54KamAJoSHGLeNPCWw"
+    params = {
+        "text": dealerreview,
+        "version": "2021-01-01",  # Replace with appropriate version
+        "features": "sentiment",
+        "return_analyzed_text": True
+    }
+    response = 'positive'
+    # response = get_request(url, api_key=api_key, **params)
+    return response  # Assuming response contains sentiment analysis result
+
+
 # - Call get_request() with specified arguments
 # - Get the returned sentiment label such as Positive or Negative
 
+
+# curl -X POST -u "apikey:aBBW0NdFyhn6TRLQtDg8h-ZDmyX54KamAJoSHGLeNPCWws" --header "Content-Type: application/json" --data '{
+#   "text": "I love apples! I do not like oranges.",
+#   "features": {
+#     "sentiment": {
+#       "targets": [
+#         "apples",
+#         "oranges",
+#         "broccoli"
+#       ]
+#     },
+#     "keywords": {
+#       "emotion": true
+#     }
+#   }
+# }' "https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/077adcb3-6e83-4ca3-998d-993821be0ae7/v1/analyze?version=2019-07-12"
 
 

@@ -1,6 +1,6 @@
 from cloudant.client import Cloudant
 from cloudant.query import Query
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request , abort
 import atexit
 
 #Add your Cloudant service credentials here
@@ -65,6 +65,9 @@ def post_review():
 
     # Save the review data as a new document in the Cloudant database
     db.create_document(review_data)
+
+     # Generate UUID for the document ID
+    # review_data['_id'] = db.create_document(review_data).json()['id']
 
     return jsonify({"message": "Review posted successfully"}), 201
 

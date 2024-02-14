@@ -12,8 +12,10 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 import os
 from pathlib import Path
 from company_info import COMPANY_INFO
+from database_urls import DATABASE_URLS
 
 COMPANY_INFO = COMPANY_INFO
+DATABASE_URLS = DATABASE_URLS
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

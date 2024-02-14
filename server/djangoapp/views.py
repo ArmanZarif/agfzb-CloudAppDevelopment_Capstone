@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect, HttpResponse , Http404
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
 # from .models import related models
-from .restapis import get_dealers_from_cf, get_dealer_reviews_from_cf
+from .restapis import get_dealers_from_cf, get_dealer_reviews_from_cf ,analyze_review_sentiments,post_request
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from datetime import datetime
@@ -77,9 +77,9 @@ def registration_request(request):
 
 # Update the `get_dealerships` view to render the index page with a list of dealerships
 def get_dealerships(request):
-    if request.method == "GET":
-        url = "https://arman1zarif-3000.theiadockernext-1-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/dealerships/get"
-        # Get dealers from the URL
+    if request.method == "GET":      
+        url = f"{settings.DATABASE_URLS['dealerships']}/dealerships/get"         
+        # Get dealers from the URL        
         dealerships = get_dealers_from_cf(url)
         # Concat all dealer's short name
         dealer_names = ' '.join([dealer.short_name for dealer in dealerships])
@@ -88,17 +88,48 @@ def get_dealerships(request):
 
 # Create a `get_dealer_details` view to render the reviews of a dealer
 def get_dealer_details(request, dealer_id):
-    if request.method == 'GET':
-        url = "https://arman1zarif-5000.theiadockernext-1-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/api/get_reviews"
+    if request.method == 'GET':               
+        url = f"{settings.DATABASE_URLS['reviews']}/api/get_reviews"  
         reviews = get_dealer_reviews_from_cf(url,dealer_id)
-        # review = ' '.join([review for review in reviews])
-        # print(reviews)
+        for review in reviews:
+            review.sentiment = analyze_review_sentiments(review.review)                          
         return HttpResponse(reviews)
 
 # def get_dealer_details(request, dealer_id):
 # ...
 
 # Create a `add_review` view to submit a review
-# def add_review(request, dealer_id):
+def add_review(request, dealer_id):
+    if request.method == "POST":
+        url = f"{settings.DATABASE_URLS['reviews']}/api/post_review" 
+        print(url)
+        if not request.user.is_authenticated:
+            return HttpResponse("Unauthorized", status=401)
+        review = {
+            "id": request.POST.get("id"),
+            "name": request.POST.get("name"),
+            "dealership": int(dealer_id),
+            "review": request.POST.get("review"),
+            "purchase": request.POST.get("purchase"),
+            "purchase_date": request.POST.get("purchase_date"),
+            "car_make": request.POST.get("car_make"),
+            "car_model": request.POST.get("car_model"),
+            "car_year": request.POST.get("car_year")
+        }        
+        # print('*************************************===')
+        # print(json_payload)
+        # return HttpResponse(json_payload)
+        response = post_request(url, review)
+        if response:
+            # Optionally, you can return the response content or status code                    
+            return HttpResponse(response['message'], 201)
+
+        else:
+            return HttpResponse("Failed to post review", status=500)
+    else:
+        return HttpResponse("Method not allowed", status=405)
 # ...
 
+
+def home(request):  
+    return render(request, 'djangoapp/index.html')
